@@ -1,8 +1,11 @@
 FROM python:3.10-buster
+
 ENV FTP_USER=foo \
 	FTP_PASS=bar \
 	GID=1000 \
-	UID=1000
+	UID=1000 \
+	MNT_DIR=/mnt/gcs \
+	GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
 
 # Install system dependencies
 RUN set -e; \
@@ -18,12 +21,20 @@ RUN set -e; \
     apt-get install -y gcsfuse vsftpd \
     && apt-get clean
 
+
 RUN mkdir -p /var/run/vsftpd/empty  # default secure_chroot_dir
 COPY [ "/src/vsftpd.conf", "/etc" ]
 COPY [ "/src/docker-entrypoint.sh", "/" ]
+COPY [ "/credentials.json", "/" ]
 RUN chmod +x /docker-entrypoint.sh
 
-CMD [ "/usr/sbin/vsftpd" ]
-ENTRYPOINT [ "/docker-entrypoint.sh" ]
+# Use tini to manage zombie processes and signal forwarding
+# https://github.com/krallin/tini
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# CMD [ "/usr/sbin/vsftpd" ]
+# ENTRYPOINT [ "/docker-entrypoint.sh" ]
+# CMD ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/bin/bash"]
 EXPOSE 20/tcp 21/tcp 40000-40009/tcp
 HEALTHCHECK CMD netstat -lnt | grep :21 || exit 1
