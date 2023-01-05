@@ -32,9 +32,8 @@ RUN chmod +x /docker-entrypoint.sh
 # https://github.com/krallin/tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# CMD [ "/usr/sbin/vsftpd" ]
-# ENTRYPOINT [ "/docker-entrypoint.sh" ]
+
 CMD ["/docker-entrypoint.sh"]
-# ENTRYPOINT ["/bin/bash"]
+
 EXPOSE 20/tcp 21/tcp 40000-40009/tcp
 HEALTHCHECK CMD netstat -lnt | grep :21 || exit 1
