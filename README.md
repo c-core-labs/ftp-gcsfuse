@@ -13,9 +13,22 @@ docker run \
 	--env FTP_PASS=123 \
 	--env FTP_USER=user \
 	--env BUCKET=c-core-labs-ftp \
-	--name my-ftp-server \
 	--publish 20-21:20-21/tcp \
 	--publish 40000-40009:40000-40009/tcp \
 	--volume /data:/home/user \
+	gcr.io/c-core-labs/ftp-gcsfuse
+```
+
+
+## Run interactive
+```bash
+docker run \
+	--rm \
+	-it \
+	--env FTP_PASS=123 \
+	--env FTP_USER=user \
+	--env BUCKET=c-core-labs-ftp \
+	--publish 20-21:20-21/tcp \
+	--publish 40000-40009:40000-40009/tcp \
 	gcr.io/c-core-labs/ftp-gcsfuse
 ```

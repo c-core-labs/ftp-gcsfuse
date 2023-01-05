@@ -18,6 +18,7 @@ RUN set -e; \
     apt-get install -y gcsfuse vsftpd \
     && apt-get clean
 
+RUN mkdir -p /var/run/vsftpd/empty  # default secure_chroot_dir
 COPY [ "/src/vsftpd.conf", "/etc" ]
 COPY [ "/src/docker-entrypoint.sh", "/" ]
 RUN chmod +x /docker-entrypoint.sh
