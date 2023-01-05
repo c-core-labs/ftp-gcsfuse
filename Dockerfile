@@ -1,11 +1,22 @@
-FROM alpine:3.17.0
+FROM python:3.10-buster
 ENV FTP_USER=foo \
 	FTP_PASS=bar \
 	GID=1000 \
 	UID=1000
 
-RUN apk add --no-cache --update \
-	vsftpd==3.0.5-r2
+# Install system dependencies
+RUN set -e; \
+    apt-get update -y && apt-get install -y \
+    tini \
+    lsb-release; \
+    gcsFuseRepo=gcsfuse-`lsb_release -c -s`; \
+    echo "deb http://packages.cloud.google.com/apt $gcsFuseRepo main" | \
+    tee /etc/apt/sources.list.d/gcsfuse.list; \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+    apt-key add -; \
+    apt-get update; \
+    apt-get install -y gcsfuse vsftpd \
+    && apt-get clean
 
 COPY [ "/src/vsftpd.conf", "/etc" ]
 COPY [ "/src/docker-entrypoint.sh", "/" ]

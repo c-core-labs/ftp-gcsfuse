@@ -1,16 +1,16 @@
 #!/bin/sh
 
 addgroup \
-	-g $GID \
-	-S \
+	--gid $GID \
+	--system \
 	$FTP_USER
 
 adduser \
-	-D \
-	-G $FTP_USER \
-	-h /home/$FTP_USER \
-	-s /bin/false \
-	-u $UID \
+        --gid $GID \
+	--home /home/$FTP_USER \
+	--uid $UID \
+	--gecos "" \
+	--disabled-password \
 	$FTP_USER
 
 mkdir -p /home/$FTP_USER
