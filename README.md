@@ -10,12 +10,14 @@ https://cloud.google.com/run/docs/tutorials/network-filesystems-fuse
 ```bash
 docker run \
 	--detach \
+	--privileged \
 	--env FTP_PASS=123 \
 	--env FTP_USER=user \
 	--env BUCKET=c-core-labs-ftp \
+	--env MNT_DIR=/home/user \
 	--publish 20-21:20-21/tcp \
 	--publish 40000-40009:40000-40009/tcp \
-	--volume /data:/home/user \
+	--volume "$PWD/data:/home/user" \
 	gcr.io/c-core-labs/ftp-gcsfuse
 ```
 
@@ -29,7 +31,7 @@ docker run \
 	--env FTP_PASS=123 \
 	--env FTP_USER=user \
 	--env BUCKET=c-core-labs-ftp \
-	--env MNT_DIR=/home/user/cis \
+	--env MNT_DIR=/home/user \
 	--publish 20-21:20-21/tcp \
 	--publish 40000-40009:40000-40009/tcp \
 	--volume "$PWD/data:/home/user" \
