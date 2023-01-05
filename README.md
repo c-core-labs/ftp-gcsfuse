@@ -31,6 +31,7 @@ docker run \
 	--env BUCKET=c-core-labs-ftp \
 	--publish 20-21:20-21/tcp \
 	--publish 40000-40009:40000-40009/tcp \
+	--volume "$PWD/data:/home/user" \
 	gcr.io/c-core-labs/ftp-gcsfuse
 ```
 

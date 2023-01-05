@@ -27,7 +27,7 @@ gcsfuse --debug_gcs --debug_fuse $BUCKET $MNT_DIR
 echo "Mounting completed."
 echo $(ls $MNT_DIR)
 echo $(ls)
-echo "DOne."
+echo "Done."
 
 touch /var/log/vsftpd.log
 tail -f /var/log/vsftpd.log | tee /dev/stdout &
