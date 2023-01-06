@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 HOME_DIRECTORY="/home/$FTP_USER"
 # Gcsfuse mount fails when set to user home directory in ContainerOS.
