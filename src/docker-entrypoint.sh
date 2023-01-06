@@ -1,5 +1,15 @@
 #!/bin/sh
 
+HOME_DIRECTORY="/home/$FTP_USER"
+# Gcsfuse mount fails when set to user home directory in ContainerOS.
+# We mount to a subdirectory instead
+FUSE_MOUNT_DIRECTORY="/home/$FTP_USER/bucket"
+
+echo "HOME_DIRECTORY"
+echo $HOME_DIRECTORY
+echo "FUSE_MOUNT_DIRECTORY"
+echo $FUSE_MOUNT_DIRECTORY
+
 addgroup \
 	--gid $GID \
 	--system \
@@ -14,22 +24,23 @@ adduser \
 	$FTP_USER
 
 
-mkdir -p /home/$FTP_USER
-mkdir -p $MNT_DIR
+mkdir -p $HOME_DIRECTORY
+mkdir -p $FUSE_MOUNT_DIRECTORY
 
-chown -R $FTP_USER:$FTP_USER /home/$FTP_USER
+chown -R $FTP_USER:$FTP_USER $HOME_DIRECTORY
 echo "$FTP_USER:$FTP_PASS" | /usr/sbin/chpasswd
 
-echo "Mounting GCS Fuse."
+echo "Mounting $BUCKET to $FUSE_MOUNT_DIRECTORY"
 echo $BUCKET
-gcsfuse --debug_gcs --debug_fuse -o allow_other --gid $GID --uid $UID $BUCKET $MNT_DIR 
+gcsfuse --debug_gcs --debug_fuse -o allow_other --gid $GID --uid $UID $BUCKET $FUSE_MOUNT_DIRECTORY
 echo "Mounting completed."
 
+# Substitut vsftpd local_root to use directory mounted to bucket
+sed -i 's#^\(local_root\s*=\s*\).*$#\1'"$FUSE_MOUNT_DIRECTORY"'#' /etc/vsftpd.conf
 
+cat /etc/vsftpd.conf
+
+echo ""
 
 echo "Starting vsftpd"
-exec /usr/sbin/vsftpd &
-echo "Vsftpd started."
-
-# Exit immediately when one of the background processes terminate.
-wait
+/usr/sbin/vsftpd

@@ -4,7 +4,6 @@ ENV FTP_USER=foo \
 	FTP_PASS=bar \
 	GID=1000 \
 	UID=1000 \
-	MNT_DIR=/mnt/gcs \
 	GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
 
 # Install system dependencies
