@@ -144,3 +144,8 @@ POST https://www.googleapis.com/compute/v1/projects/c-core-labs/zones/us-central
   "zone": "projects/c-core-labs/zones/us-central1-a"
 }
 ```
+## Notes
+
+### Directories
+From https://cloud.google.com/storage/docs/gcs-fuse :
+By default, only directories that are explicitly defined (that is, they are their own object in Cloud Storage) will appear in the file system. Implicit directories (that is, ones that are only parts of the pathname of other files or directories) will not appear by default. If there are files whose pathname contain an implicit directory, they will not appear in the overall directory tree (since the implicit directory containing them does not appear). A flag is available to change this behavior. For more information, see the semantics documentation.
