@@ -144,6 +144,12 @@ POST https://www.googleapis.com/compute/v1/projects/c-core-labs/zones/us-central
   "zone": "projects/c-core-labs/zones/us-central1-a"
 }
 ```
+
+## Update container via cli
+```bash
+gcloud compute instances update-container ftp-cis-ice-charts --zone us-central1-a --container-image gcr.io/c-core-labs/ftp-gcsfuse
+```
+
 ## Notes
 
 ### Directories

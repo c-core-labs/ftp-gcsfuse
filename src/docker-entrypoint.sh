@@ -35,8 +35,12 @@ echo $BUCKET
 gcsfuse --debug_gcs --debug_fuse -o allow_other --gid $GID --uid $UID $BUCKET $FUSE_MOUNT_DIRECTORY
 echo "Mounting completed."
 
-# Substitut vsftpd local_root to use directory mounted to bucket
+# Substitute vsftpd local_root to use directory mounted to bucket
 sed -i 's#^\(local_root\s*=\s*\).*$#\1'"$FUSE_MOUNT_DIRECTORY"'#' /etc/vsftpd.conf
+
+# Substitute vsftpd passive address with public IP address
+IP_ADDRESS=$(curl ipinfo.io/ip)
+sed -i 's#^\(pasv_address\s*=\s*\).*$#\1'"$IP_ADDRESS"'#' /etc/vsftpd.conf
 
 cat /etc/vsftpd.conf
 
