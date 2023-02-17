@@ -32,7 +32,7 @@ echo "$FTP_USER:$FTP_PASS" | /usr/sbin/chpasswd
 
 echo "Mounting $BUCKET to $FUSE_MOUNT_DIRECTORY"
 echo $BUCKET
-gcsfuse --debug_gcs --debug_fuse -o allow_other --gid $GID --uid $UID $BUCKET $FUSE_MOUNT_DIRECTORY
+gcsfuse -o allow_other --gid $GID --uid $UID $BUCKET $FUSE_MOUNT_DIRECTORY
 echo "Mounting completed."
 
 # Substitute vsftpd local_root to use directory mounted to bucket

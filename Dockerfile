@@ -17,7 +17,7 @@ RUN set -e; \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
     apt-key add -; \
     apt-get update; \
-    apt-get install -y gcsfuse vsftpd \
+    apt-get install -y gcsfuse vsftpd net-tools \
     && apt-get clean
 
 
