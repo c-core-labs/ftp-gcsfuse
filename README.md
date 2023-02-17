@@ -5,6 +5,7 @@ An FTP server backed by a cloud storage bucket. Adapted from:
 
 For a guide on using gcsfuse to mount a cloud storage bucket, see:
 https://cloud.google.com/run/docs/tutorials/network-filesystems-fuse
+
 	
 ## Run
 ```bash
@@ -52,103 +53,48 @@ docker login -u oauth2accesstoken -p $ACCESS_TOKEN https://gcr.io
 docker run --rm -it --privileged --env FTP_PASS=123 --env FTP_USER=user --env BUCKET=c-core-labs-ftp --env MNT_DIR=/home/user --publish 20-21:20-21/tcp --publish 40000-40009:40000-40009/tcp --volume "$PWD/data:/home/user" gcr.io/c-core-labs/ftp-gcsfuse
 ```
 
-## Deploy to GCP COmpute
+## Deploy to GCP Compute
+This also deploys [autoheal](https://github.com/willfarrell/docker-autoheal), which restarts the ftp-gcsfuse container if port 21 is not responsive.
+
 ```bash
-gcloud compute instances create-with-container ftp-cis-ice-charts --project=c-core-labs --zone=us-central1-a --machine-type=e2-micro --network-interface=network-tier=PREMIUM,subnet=default --maintenance-policy=MIGRATE --provisioning-model=STANDARD --service-account=ftp-gcsfuse@c-core-labs.iam.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --tags=ftp --image=projects/cos-cloud/global/images/cos-stable-101-17162-40-42 --boot-disk-size=10GB --boot-disk-type=pd-balanced --boot-disk-device-name=ftp-cis-ice-charts --container-image=gcr.io/c-core-labs/ftp-gcsfuse --container-restart-policy=always --container-privileged --container-env=FTP_USER=ftp-user,FTP_PASS=password1,BUCKET=c-core-labs-ftp --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --labels=container-vm=cos-stable-101-17162-40-42
+gcloud compute instances create-with-container ftp-cis-ice-charts \
+    --project=c-core-labs \
+    --zone=us-central1-a \
+    --machine-type=f1-micro \
+    --network-interface=network-tier=PREMIUM,subnet=default \
+    --maintenance-policy=MIGRATE \
+    --provisioning-model=STANDARD \
+    --service-account=455917761237-compute@developer.gserviceaccount.com \
+    --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
+    --tags=ftp \
+    --image=projects/cos-cloud/global/images/cos-stable-101-17162-127-8 \
+    --boot-disk-size=10GB \
+    --boot-disk-type=pd-balanced \
+    --boot-disk-device-name=ftp-cis-ice-charts \
+    --container-image=gcr.io/c-core-labs/ftp-gcsfuse \
+    --container-restart-policy=always \
+    --container-privileged \
+    --container-env=FTP_USER=ftp-user,FTP_PASS=password1,BUCKET=c-core-labs-ftp \
+    --no-shielded-secure-boot \
+    --shielded-vtpm \
+    --shielded-integrity-monitoring \
+    --labels=container-vm=cos-stable-101-17162-127-8 \
+	--metadata=startup-script='#! /bin/bash
+	docker run -d \
+      --name autoheal \
+      --restart=always \
+      -e AUTOHEAL_CONTAINER_LABEL=all \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      willfarrell/autoheal
+    EOF'
 ```
 
-## Deploy via rest
-```bash
-POST https://www.googleapis.com/compute/v1/projects/c-core-labs/zones/us-central1-a/instances
-{
-  "canIpForward": false,
-  "confidentialInstanceConfig": {
-    "enableConfidentialCompute": false
-  },
-  "deletionProtection": false,
-  "description": "",
-  "disks": [
-    {
-      "autoDelete": true,
-      "boot": true,
-      "deviceName": "ftp-cis-ice-charts",
-      "initializeParams": {
-        "diskSizeGb": "10",
-        "diskType": "projects/c-core-labs/zones/us-central1-a/diskTypes/pd-balanced",
-        "labels": {},
-        "sourceImage": "projects/cos-cloud/global/images/cos-stable-101-17162-40-42"
-      },
-      "mode": "READ_WRITE",
-      "type": "PERSISTENT"
-    }
-  ],
-  "displayDevice": {
-    "enableDisplay": false
-  },
-  "guestAccelerators": [],
-  "keyRevocationActionType": "NONE",
-  "labels": {
-    "container-vm": "cos-stable-101-17162-40-42"
-  },
-  "machineType": "projects/c-core-labs/zones/us-central1-a/machineTypes/e2-micro",
-  "metadata": {
-    "items": [
-      {
-        "key": "gce-container-declaration",
-        "value": "spec:\n  containers:\n  - name: ftp-cis-ice-charts\n    image: gcr.io/c-core-labs/ftp-gcsfuse\n    env:\n    - name: FTP_USER\n      value: ftp-user\n    - name: FTP_PASS\n      value: password1\n    - name: BUCKET\n      value: c-core-labs-ftp\n    - name: MNT_DIR\n      value: /home/user/bucket\n    securityContext:\n      privileged: true\n    stdin: false\n    tty: false\n  restartPolicy: Always\n# This container declaration format is not public API and may change without notice. Please\n# use gcloud command-line tool or Google Cloud Console to run Containers on Google Compute Engine."
-      }
-    ]
-  },
-  "name": "ftp-cis-ice-charts",
-  "networkInterfaces": [
-    {
-      "accessConfigs": [
-        {
-          "name": "External NAT",
-          "networkTier": "PREMIUM"
-        }
-      ],
-      "stackType": "IPV4_ONLY",
-      "subnetwork": "projects/c-core-labs/regions/us-central1/subnetworks/default"
-    }
-  ],
-  "params": {
-    "resourceManagerTags": {}
-  },
-  "reservationAffinity": {
-    "consumeReservationType": "ANY_RESERVATION"
-  },
-  "scheduling": {
-    "automaticRestart": true,
-    "onHostMaintenance": "MIGRATE",
-    "provisioningModel": "STANDARD"
-  },
-  "serviceAccounts": [
-    {
-      "email": "ftp-gcsfuse@c-core-labs.iam.gserviceaccount.com",
-      "scopes": [
-        "https://www.googleapis.com/auth/cloud-platform"
-      ]
-    }
-  ],
-  "shieldedInstanceConfig": {
-    "enableIntegrityMonitoring": true,
-    "enableSecureBoot": false,
-    "enableVtpm": true
-  },
-  "tags": {
-    "items": [
-      "ftp"
-    ]
-  },
-  "zone": "projects/c-core-labs/zones/us-central1-a"
-}
-```
 
 ## Update container via cli
 ```bash
 gcloud compute instances update-container ftp-cis-ice-charts --zone us-central1-a --container-image gcr.io/c-core-labs/ftp-gcsfuse
 ```
+
 
 ## Notes
 
