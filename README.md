@@ -79,8 +79,8 @@ gcloud compute instances create-with-container ftp-cis-ice-charts \
     --shielded-vtpm \
     --shielded-integrity-monitoring \
     --labels=container-vm=cos-stable-101-17162-127-8 \
-	--metadata=startup-script='#! /bin/bash
-	docker run -d \
+    --metadata=startup-script='#! /bin/bash
+    docker run -d \
       --name autoheal \
       --restart=always \
       -e AUTOHEAL_CONTAINER_LABEL=all \
